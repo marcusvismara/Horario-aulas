@@ -83,6 +83,19 @@
     border-radius: 20px;
     transition: width .3s ease;
   }
+  /* Estilo da Linha de Almoço */
+  .lunch-divider {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 8px;
+    border-radius: 12px;
+    margin: 14px 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffd166;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
   .slot-card {
     display: flex;
     align-items: center;
@@ -186,61 +199,66 @@
 
   <div id="slotsList"></div>
 
-  <button class="reset-btn" id="resetBtn">🔄 Desmarcar aulas do dia</button>
+  <button class="reset-btn" id="resetBtn">🔄 Limpar marcações manuais</button>
 </div>
 
 <script>
-// Padrão de horários de 50 em 50 minutos para cada dia
+// Grade de horários com os blocos da manhã e da tarde
 const scheduleSlots = {
   dom: [],
   seg: [
-    { time: "07:30 - 08:20", label: "" },
-    { time: "08:20 - 09:10", label: "" },
-    { time: "09:10 - 10:00", label: "" },
-    { time: "10:20 - 11:10", label: "3° Mat" },
-    { time: "11:10 - 12:00", label: "3° Mat" },
-    { time: "13:30 - 14:20", label: "1° Mat" },
-    { time: "14:20 - 15:10", label: "3° E.A." },
-    { time: "15:10 - 16:00", label: "3° E.A." }
+    { time: "07:30 - 08:20", label: "", period: "mora" },
+    { time: "08:20 - 09:10", label: "", period: "mora" },
+    { time: "09:10 - 10:00", label: "", period: "mora" },
+    { time: "10:20 - 11:10", label: "3° Mat", period: "mora" },
+    { time: "11:10 - 12:00", label: "3° Mat", period: "mora" },
+    { type: "lunch" },
+    { time: "13:30 - 14:20", label: "1° Mat", period: "tarde" },
+    { time: "14:20 - 15:10", label: "3° E.A.", period: "tarde" },
+    { time: "15:10 - 16:00", label: "3° E.A.", period: "tarde" }
   ],
   ter: [
-    { time: "07:30 - 08:20", label: "" },
-    { time: "08:20 - 09:10", label: "" },
-    { time: "09:10 - 10:00", label: "" },
-    { time: "10:20 - 11:10", label: "" },
-    { time: "11:10 - 12:00", label: "" },
-    { time: "13:30 - 14:20", label: "" },
-    { time: "14:20 - 15:10", label: "" },
-    { time: "15:10 - 16:00", label: "" }
+    { time: "07:30 - 08:20", label: "", period: "mora" },
+    { time: "08:20 - 09:10", label: "", period: "mora" },
+    { time: "09:10 - 10:00", label: "", period: "mora" },
+    { time: "10:20 - 11:10", label: "", period: "mora" },
+    { time: "11:10 - 12:00", label: "", period: "mora" },
+    { type: "lunch" },
+    { time: "13:30 - 14:20", label: "", period: "tarde" },
+    { time: "14:20 - 15:10", label: "", period: "tarde" },
+    { time: "15:10 - 16:00", label: "", period: "tarde" }
   ],
   qua: [
-    { time: "07:30 - 08:20", label: "" },
-    { time: "08:20 - 09:10", label: "" },
-    { time: "09:10 - 10:00", label: "3° E.A." },
-    { time: "10:20 - 11:10", label: "2° E.A." },
-    { time: "11:10 - 12:00", label: "" },
-    { time: "13:30 - 14:20", label: "E.A." },
-    { time: "14:20 - 15:10", label: "E.A." },
-    { time: "15:10 - 16:00", label: "3° Mat" }
+    { time: "07:30 - 08:20", label: "", period: "mora" },
+    { time: "08:20 - 09:10", label: "", period: "mora" },
+    { time: "09:10 - 10:00", label: "3° E.A.", period: "mora" },
+    { time: "10:20 - 11:10", label: "2° E.A.", period: "mora" },
+    { time: "11:10 - 12:00", label: "", period: "mora" },
+    { type: "lunch" },
+    { time: "13:30 - 14:20", label: "E.A.", period: "tarde" },
+    { time: "14:20 - 15:10", label: "E.A.", period: "tarde" },
+    { time: "15:10 - 16:00", label: "3° Mat", period: "tarde" }
   ],
   qui: [
-    { time: "07:30 - 08:20", label: "" },
-    { time: "08:20 - 09:10", label: "1° Mat" },
-    { time: "09:10 - 10:00", label: "1° Mat" },
-    { time: "10:20 - 11:10", label: "3° E.A." },
-    { time: "11:10 - 12:00", label: "2° E.A." },
-    { time: "13:00 - 13:50", label: "3° Mat" },
-    { time: "13:50 - 14:40", label: "3° Mat" }
+    { time: "07:30 - 08:20", label: "", period: "mora" },
+    { time: "08:20 - 09:10", label: "1° Mat", period: "mora" },
+    { time: "09:10 - 10:00", label: "1° Mat", period: "mora" },
+    { time: "10:20 - 11:10", label: "3° E.A.", period: "mora" },
+    { time: "11:10 - 12:00", label: "2° E.A.", period: "mora" },
+    { type: "lunch" },
+    { time: "13:00 - 13:50", label: "3° Mat", period: "tarde" },
+    { time: "13:50 - 14:40", label: "3° Mat", period: "tarde" }
   ],
   sex: [
-    { time: "07:30 - 08:20", label: "" },
-    { time: "08:20 - 09:10", label: "" },
-    { time: "09:10 - 10:00", label: "" },
-    { time: "10:20 - 11:10", label: "" },
-    { time: "11:10 - 12:00", label: "" },
-    { time: "13:30 - 14:20", label: "" },
-    { time: "14:20 - 15:10", label: "" },
-    { time: "15:10 - 16:00", label: "" }
+    { time: "07:30 - 08:20", label: "", period: "mora" },
+    { time: "08:20 - 09:10", label: "", period: "mora" },
+    { time: "09:10 - 10:00", label: "", period: "mora" },
+    { time: "10:20 - 11:10", label: "", period: "mora" },
+    { time: "11:10 - 12:00", label: "", period: "mora" },
+    { type: "lunch" },
+    { time: "13:30 - 14:20", label: "", period: "tarde" },
+    { time: "14:20 - 15:10", label: "", period: "tarde" },
+    { time: "15:10 - 16:00", label: "", period: "tarde" }
   ],
   sab: []
 };
@@ -258,7 +276,7 @@ const days = [
 const now = new Date();
 const todayIndex = now.getDay();
 let selectedDay = days[todayIndex].key;
-let checkedState = {};
+let manualOverrides = {}; // Para guardar se você alterou manualmente alguma aula
 
 const daySelectorEl = document.getElementById('daySelector');
 const slotsListEl = document.getElementById('slotsList');
@@ -268,16 +286,16 @@ const resetBtn = document.getElementById('resetBtn');
 
 function loadData() {
   try {
-    const saved = localStorage.getItem('grade_horaria_checked');
-    checkedState = saved ? JSON.parse(saved) : {};
+    const saved = localStorage.getItem('grade_overrides_v2');
+    manualOverrides = saved ? JSON.parse(saved) : {};
   } catch (e) {
-    checkedState = {};
+    manualOverrides = {};
   }
 }
 
 function saveData() {
   try {
-    localStorage.setItem('grade_horaria_checked', JSON.stringify(checkedState));
+    localStorage.setItem('grade_overrides_v2', JSON.stringify(manualOverrides));
   } catch (e) {}
 }
 
@@ -296,6 +314,11 @@ function renderDaySelector() {
   });
 }
 
+function timeToMins(timeStr) {
+  const parts = timeStr.split(':');
+  return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
 function renderSlots() {
   slotsListEl.innerHTML = '';
   const currentSlots = scheduleSlots[selectedDay] || [];
@@ -303,21 +326,38 @@ function renderSlots() {
   const isToday = (selectedDay === days[todayIndex].key);
   const currentMins = now.getHours() * 60 + now.getMinutes();
 
-  let totalClasses = currentSlots.filter(s => s.label.trim() !== "").length;
+  let totalClasses = currentSlots.filter(s => s.type !== 'lunch' && s.label.trim() !== "").length;
   let checkedClasses = 0;
 
   currentSlots.forEach((slot, index) => {
+    if (slot.type === 'lunch') {
+      const divider = document.createElement('div');
+      divider.className = 'lunch-divider';
+      divider.textContent = '🍽️ Intervalo / Almoço';
+      slotsListEl.appendChild(divider);
+      return;
+    }
+
     const hasClass = slot.label.trim() !== "";
     const checkKey = selectedDay + '_' + index;
-    const checked = !!checkedState[checkKey];
+    
+    // Lógica automática de horário passado + override manual
+    const startTimeStr = slot.time.split(' - ')[0];
+    const startMins = timeToMins(startTimeStr);
+    const isPastTime = isToday && (currentMins >= startMins + 50); // Passou dos 50 min de aula
+
+    let checked = false;
+    if (manualOverrides[checkKey] !== undefined) {
+      checked = manualOverrides[checkKey];
+    } else if (isPastTime) {
+      checked = true; // Completa automaticamente se o horário já passou
+    }
 
     if (hasClass && checked) checkedClasses++;
 
     // Verificar se está no horário atual
     let isCurrent = false;
     if (isToday && hasClass) {
-      const parts = slot.time.split(' - ')[0].split(':');
-      const startMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
       if (currentMins >= startMins && currentMins < startMins + 50) {
         isCurrent = true;
       }
@@ -327,7 +367,7 @@ function renderSlots() {
     card.className = 'slot-card' + (hasClass ? ' has-class' : '') + (checked ? ' checked' : '') + (isCurrent ? ' current-class' : '');
 
     card.innerHTML = `
-      <div class="slot-time">${slot.time.split(' - ')[0]}</div>
+      <div class="slot-time">${startTimeStr}</div>
       <div class="slot-info">
         ${isCurrent ? '<div class="current-badge">⚡ ACONTECENDO AGORA</div>' : ''}
         ${hasClass ? slot.label : '<span class="slot-free">Livre / Vago</span>'}
@@ -337,7 +377,8 @@ function renderSlots() {
 
     if (hasClass) {
       card.onclick = () => {
-        checkedState[checkKey] = !checkedState[checkKey];
+        // Inverte o estado atual em relação ao automático e salva a preferência manual
+        manualOverrides[checkKey] = !checked;
         renderSlots();
         saveData();
       };
@@ -352,10 +393,7 @@ function renderSlots() {
 }
 
 resetBtn.onclick = () => {
-  const currentSlots = scheduleSlots[selectedDay] || [];
-  currentSlots.forEach((_, index) => {
-    delete checkedState[selectedDay + '_' + index];
-  });
+  manualOverrides = {};
   renderSlots();
   saveData();
 };

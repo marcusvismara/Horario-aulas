@@ -260,11 +260,13 @@ const scheduleSlots = {
 };
 
 const days = [
-   { key: "seg", label: "Seg" },
+  { key: "dom", label: "Dom" },
+  { key: "seg", label: "Seg" },
   { key: "ter", label: "Ter" },
   { key: "qua", label: "Qua" },
   { key: "qui", label: "Qui" },
   { key: "sex", label: "Sex" },
+  { key: "sab", label: "Sáb" }
 ];
 
 const now = new Date();
@@ -280,10 +282,8 @@ const resetBtn = document.getElementById('resetBtn');
 const currentDateTitleEl = document.getElementById('currentDateTitle');
 
 function updateHeaderDate() {
-  // Formata a data atual por extenso (ex: Segunda-feira, 10 de agosto)
   const options = { weekday: 'long', day: 'numeric', month: 'long' };
   let formattedDate = now.toLocaleDateString('pt-BR', options);
-  // Deixa a primeira letra maiúscula
   formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
   currentDateTitleEl.textContent = formattedDate;
 }
@@ -305,7 +305,9 @@ function saveData() {
 
 function renderDaySelector() {
   daySelectorEl.innerHTML = '';
-  days.forEach(d => {
+  // Exibe apenas de Segunda a Sexta-feira na barra de seleção
+  const weekdays = days.filter(d => d.key !== 'dom' && d.key !== 'sab');
+  weekdays.forEach(d => {
     const btn = document.createElement('div');
     btn.className = 'day-btn' + (d.key === selectedDay ? ' active' : '');
     btn.textContent = d.label;

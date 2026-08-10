@@ -25,12 +25,11 @@
     padding: 10px 0 20px;
   }
   header h1 {
-    font-size: 1.7rem;
-    margin: 0 0 4px;
+    font-size: 1.5rem;
+    margin: 0;
     letter-spacing: 0.5px;
-  }
-  header .emoji {
-    font-size: 2.4rem;
+    color: #ffd166;
+    font-weight: 700;
   }
   .day-selector {
     display: flex;
@@ -184,8 +183,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="emoji">📅</div>
-    <h1>Grade Horária</h1>
+    <h1 id="currentDateTitle">Carregando data...</h1>
   </header>
 
   <div class="day-selector" id="daySelector"></div>
@@ -205,7 +203,6 @@
 <script>
 // Grade de horários com os blocos da manhã e da tarde
 const scheduleSlots = {
-  
   seg: [
     { time: "07:30 - 08:20", label: "", period: "mora" },
     { time: "08:20 - 09:10", label: "", period: "mora" },
@@ -260,7 +257,6 @@ const scheduleSlots = {
     { time: "14:20 - 15:10", label: "", period: "tarde" },
     { time: "15:10 - 16:00", label: "", period: "tarde" }
   ],
-  
 };
 
 const days = [
@@ -276,13 +272,23 @@ const days = [
 const now = new Date();
 const todayIndex = now.getDay();
 let selectedDay = days[todayIndex].key;
-let manualOverrides = {}; // Para guardar se você alterou manualmente alguma aula
+let manualOverrides = {}; 
 
 const daySelectorEl = document.getElementById('daySelector');
 const slotsListEl = document.getElementById('slotsList');
 const progressTextEl = document.getElementById('progressText');
 const progressBarEl = document.getElementById('progressBar');
 const resetBtn = document.getElementById('resetBtn');
+const currentDateTitleEl = document.getElementById('currentDateTitle');
+
+function updateHeaderDate() {
+  // Formata a data atual por extenso (ex: Segunda-feira, 10 de agosto)
+  const options = { weekday: 'long', day: 'numeric', month: 'long' };
+  let formattedDate = now.toLocaleDateString('pt-BR', options);
+  // Deixa a primeira letra maiúscula
+  formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+  currentDateTitleEl.textContent = formattedDate;
+}
 
 function loadData() {
   try {
@@ -341,21 +347,19 @@ function renderSlots() {
     const hasClass = slot.label.trim() !== "";
     const checkKey = selectedDay + '_' + index;
     
-    // Lógica automática de horário passado + override manual
     const startTimeStr = slot.time.split(' - ')[0];
     const startMins = timeToMins(startTimeStr);
-    const isPastTime = isToday && (currentMins >= startMins + 50); // Passou dos 50 min de aula
+    const isPastTime = isToday && (currentMins >= startMins + 50);
 
     let checked = false;
     if (manualOverrides[checkKey] !== undefined) {
       checked = manualOverrides[checkKey];
     } else if (isPastTime) {
-      checked = true; // Completa automaticamente se o horário já passou
+      checked = true;
     }
 
     if (hasClass && checked) checkedClasses++;
 
-    // Verificar se está no horário atual
     let isCurrent = false;
     if (isToday && hasClass) {
       if (currentMins >= startMins && currentMins < startMins + 50) {
@@ -377,7 +381,6 @@ function renderSlots() {
 
     if (hasClass) {
       card.onclick = () => {
-        // Inverte o estado atual em relação ao automático e salva a preferência manual
         manualOverrides[checkKey] = !checked;
         renderSlots();
         saveData();
@@ -398,6 +401,7 @@ resetBtn.onclick = () => {
   saveData();
 };
 
+updateHeaderDate();
 loadData();
 renderDaySelector();
 renderSlots();

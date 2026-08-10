@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Meu Horário de Aulas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icone.png">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -117,6 +119,23 @@
     margin-bottom: 12px;
     transition: background .2s ease, transform .12s ease;
     user-select: none;
+    border: 2px solid transparent;
+  }
+  /* Estilo para a aula que está acontecendo AGORA */
+  .item.current-class {
+    background: rgba(255, 209, 102, 0.2);
+    border-color: #ffd166;
+    box-shadow: 0 0 12px rgba(255, 209, 102, 0.4);
+  }
+  .current-badge {
+    font-size: 0.75rem;
+    background: #ffd166;
+    color: #1a1a1a;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: inline-block;
   }
   .item-left {
     display: flex;
@@ -213,32 +232,32 @@
 const defaultSchedule = {
   dom: [],
   seg: [
-    { id: 1, label: "10:20 - 3° Mat" },
-    { id: 2, label: "11:10 - 3° Mat" },
-    { id: 3, label: "13:30 - 1° Mat" },
-    { id: 4, label: "14:20 - 3° E.A." },
-    { id: 5, label: "15:10 - 3° E.A." }
+    { id: 1, time: "10:20", label: "10:20 - 3° Mat" },
+    { id: 2, time: "11:10", label: "11:10 - 3° Mat" },
+    { id: 3, time: "13:30", label: "13:30 - 1° Mat" },
+    { id: 4, time: "14:20", label: "14:20 - 3° E.A." },
+    { id: 5, time: "15:10", label: "15:10 - 3° E.A." }
   ],
   ter: [
-    { id: 1, label: "Adicionar horário de Terça..." }
+    { id: 1, time: "", label: "Adicionar horário de Terça..." }
   ],
   qua: [
-    { id: 1, label: "09:10 - 3° E.A." },
-    { id: 2, label: "10:20 - 2° E.A." },
-    { id: 3, label: "13:30 - E.A." },
-    { id: 4, label: "14:20 - E.A." },
-    { id: 5, label: "15:10 - 3° Mat" }
+    { id: 1, time: "09:10", label: "09:10 - 3° E.A." },
+    { id: 2, time: "10:20", label: "10:20 - 2° E.A." },
+    { id: 3, time: "13:30", label: "13:30 - E.A." },
+    { id: 4, time: "14:20", label: "14:20 - E.A." },
+    { id: 5, time: "15:10", label: "15:10 - 3° Mat" }
   ],
   qui: [
-    { id: 1, label: "08:20 - 1° Mat" },
-    { id: 2, label: "09:10 - 1° Mat" },
-    { id: 3, label: "10:20 - 3° E.A." },
-    { id: 4, label: "11:10 - 2° E.A." },
-    { id: 5, label: "13:00 - 3° Mat" },
-    { id: 6, label: "13:50 - 3° Mat" }
+    { id: 1, time: "08:20", label: "08:20 - 1° Mat" },
+    { id: 2, time: "09:10", label: "09:10 - 1° Mat" },
+    { id: 3, time: "10:20", label: "10:20 - 3° E.A." },
+    { id: 4, time: "11:10", label: "11:10 - 2° E.A." },
+    { id: 5, time: "13:00", label: "13:00 - 3° Mat" },
+    { id: 6, time: "13:50", label: "13:50 - 3° Mat" }
   ],
   sex: [
-    { id: 1, label: "Adicionar horário de Sexta..." }
+    { id: 1, time: "", label: "Adicionar horário de Sexta..." }
   ],
   sab: []
 };
@@ -253,7 +272,8 @@ const days = [
   { key: "sab", label: "Sáb" }
 ];
 
-const todayIndex = new Date().getDay();
+const now = new Date();
+const todayIndex = now.getDay();
 let selectedDay = days[todayIndex].key;
 let allItems = {};
 let checkedState = {};
@@ -302,6 +322,18 @@ function renderDaySelector() {
   });
 }
 
+function getCurrentTimeMinutes() {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+function timeToMinutes(timeStr) {
+  if (!timeStr) return -1;
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return -1;
+  return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
 function renderItems() {
   itemsListEl.innerHTML = '';
   const currentList = allItems[selectedDay] || [];
@@ -312,16 +344,36 @@ function renderItems() {
     emptyMsgEl.style.display = 'none';
   }
 
-  currentList.forEach(item => {
+  // Verifica se o dia selecionado é hoje de verdade
+  const isToday = (selectedDay === days[todayIndex].key);
+  const currentMins = getCurrentTimeMinutes();
+
+  currentList.forEach((item, index) => {
     const checkKey = selectedDay + '_' + item.id;
     const checked = !!checkedState[checkKey];
     
+    // Identifica se é a aula atual (considera uma janela de ~50 min por aula)
+    let isCurrent = false;
+    if (isToday && item.time) {
+      const itemMins = timeToMinutes(item.time);
+      if (itemMins !== -1) {
+        // Se a hora atual estiver entre o horário da aula e 50 minutos depois
+        if (currentMins >= itemMins && currentMins < itemMins + 50) {
+          isCurrent = true;
+        }
+      }
+    }
+
     const el = document.createElement('div');
-    el.className = 'item' + (checked ? ' checked' : '');
+    el.className = 'item' + (checked ? ' checked' : '') + (isCurrent ? ' current-class' : '');
+    
     el.innerHTML = `
       <div class="item-left">
         <div class="checkbox">${checked ? '✓' : ''}</div>
-        <div class="item-label">${item.label}</div>
+        <div>
+          ${isCurrent ? '<div class="current-badge">⚡ ACONTECENDO AGORA</div>' : ''}
+          <div class="item-label">${item.label}</div>
+        </div>
       </div>
       <button class="delete-btn" title="Excluir">🗑️</button>
     `;
@@ -358,10 +410,18 @@ function addItem() {
   const text = itemInput.value.trim();
   if (!text) return;
 
+  // Tenta extrair o horário automaticamente se começar com formato HH:MM (ex: "13:30 - Matéria")
+  let extractedTime = "";
+  const match = text.match(/^(\d{2}:\d{2})/);
+  if (match) {
+    extractedTime = match[1];
+  }
+
   if (!allItems[selectedDay]) allItems[selectedDay] = [];
   
   allItems[selectedDay].push({
     id: Date.now(),
+    time: extractedTime,
     label: text
   });
 
